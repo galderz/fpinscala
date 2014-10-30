@@ -101,7 +101,13 @@ object List { // `List` companion object. Contains functions for creating and wo
     // length(l, 0)
   }
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  @tailrec
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = {
+    l match {
+      case Nil => z
+      case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+  }
 
   def sumViaFoldLeft(nums: List[Int]): Int = sys.error("todo")
 
