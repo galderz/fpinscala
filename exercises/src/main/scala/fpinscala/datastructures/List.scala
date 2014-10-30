@@ -61,13 +61,28 @@ object List { // `List` companion object. Contains functions for creating and wo
     }
   }
 
-  def drop[A](l: List[A], n: Int): List[A] = sys.error("todo")
+  def drop[A](l: List[A], n: Int): List[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(h, t) =>
+        if (n <= 0) l
+        else drop(tail(l), n - 1)
+    }
+  }
 
   def dropWhile[A](l: List[A], f: A => Boolean): List[A] = sys.error("todo")
 
   def init[A](l: List[A]): List[A] = sys.error("todo")
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  def length[A](l: List[A]): Int = {
+    def length(l: List[A], acc: Int): Int =
+      l match {
+        case Nil => 0
+        case Cons(h, t) => length(t, acc + 1)
+      }
+
+    length(l, 0)
+  }
 
   def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
 
