@@ -1,5 +1,7 @@
 package fpinscala.gettingstarted
 
+import scala.annotation.tailrec
+
 // A comment!
 /* Another comment */
 /** A documentation comment */
@@ -129,7 +131,17 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A, A) => Boolean): Boolean = {
+    @tailrec
+    def loop(e1: A, e2: A, n: Int): Boolean = {
+      if (n >= as.length - 1) gt(e2, e1)
+      else if (gt(e2, e1)) loop(as(n), as(n + 1), n + 1)
+      else false
+    }
+
+    if (as.length <= 1) true
+    else loop(as.head, as.tail.head, 1)
+  }
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
