@@ -22,7 +22,7 @@ object List { // `List` companion object. Contains functions for creating and wo
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
 
-  val x = List(1,2,3,4,5) match {
+  val list = List(1,2,3,4,5) match {
     case Cons(x, Cons(2, Cons(4, _))) => x
     case Nil => 42 
     case Cons(x, Cons(y, Cons(3, Cons(4, _)))) => x + y
@@ -109,11 +109,11 @@ object List { // `List` companion object. Contains functions for creating and wo
     }
   }
 
-  def sumViaFoldLeft(nums: List[Int]): Int = sys.error("todo")
+  def sumViaFoldLeft(nums: List[Int]): Int = foldLeft(nums, 0)(_ + _)
 
-  def productViaFoldLeft(nums: List[Double]): Double = sys.error("todo")
+  def productViaFoldLeft(nums: List[Double]): Double = foldLeft(nums, 1.0)(_ * _)
 
-  def lengthViaFoldLeft(l: List[_]): Int = sys.error("todo")
+  def lengthViaFoldLeft(l: List[_]): Int = foldLeft(l, 0)((acc, x) => acc + 1)
 
   def reverse[A](l: List[A]): List[A] = sys.error("todo")
 
