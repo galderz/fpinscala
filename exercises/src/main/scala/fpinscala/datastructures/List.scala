@@ -88,13 +88,17 @@ object List { // `List` companion object. Contains functions for creating and wo
   }
 
   def length[A](l: List[A]): Int = {
-    def length(l: List[A], acc: Int): Int =
-      l match {
-        case Nil => 0
-        case Cons(h, t) => length(t, acc + 1)
-      }
+    // Compute it using foldRight
+    foldRight(l, 0)((_, curr) => curr + 1)
 
-    length(l, 0)
+    // More verbose implementation
+    // def length(l: List[A], acc: Int): Int =
+    //  l match {
+    //    case Nil => acc
+    //    case Cons(h, t) => length(t, acc + 1)
+    //  }
+    //
+    // length(l, 0)
   }
 
   def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
