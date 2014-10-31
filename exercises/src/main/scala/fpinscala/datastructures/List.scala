@@ -129,7 +129,8 @@ object List { // `List` companion object. Contains functions for creating and wo
   def add1(nums: List[Int]): List[Int] =
     foldRight(nums, Nil:List[Int])((num, acc) => Cons(num + 1, acc))
 
-  def doubleToString(l: List[Double]): List[String] = sys.error("todo")
+  def doubleToString(l: List[Double]): List[String] =
+    foldRight(l, Nil:List[String])((num, acc) => Cons(num.toString, acc))
 
   def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
 
