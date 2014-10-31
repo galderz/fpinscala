@@ -123,7 +123,8 @@ object List { // `List` companion object. Contains functions for creating and wo
   def appendViaFoldLeft[A](a1: List[A], a2: List[A]): List[A] =
     foldLeft(reverse(a1), a2)((acc, x) => Cons(x, acc))
 
-  def concat[A](l: List[List[A]]): List[A] = sys.error("todo")
+  def concat[A](l: List[List[A]]): List[A] =
+    foldLeft(l, Nil:List[A])((acc, subl) => append(acc, subl))
 
   def add1(nums: List[Int]): List[Int] = sys.error("todo")
 
