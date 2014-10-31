@@ -132,7 +132,8 @@ object List { // `List` companion object. Contains functions for creating and wo
   def doubleToString(l: List[Double]): List[String] =
     foldRight(l, Nil:List[String])((num, acc) => Cons(num.toString, acc))
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  def map[A,B](l: List[A])(f: A => B): List[B] =
+    foldRight(l, Nil:List[B])((a, acc) => Cons(f(a), acc))
 
   def filter[A](l: List[A])(f: A => Boolean): List[A] = sys.error("todo")
 
