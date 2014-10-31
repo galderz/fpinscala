@@ -126,7 +126,8 @@ object List { // `List` companion object. Contains functions for creating and wo
   def concat[A](l: List[List[A]]): List[A] =
     foldLeft(l, Nil:List[A])((acc, subl) => append(acc, subl))
 
-  def add1(nums: List[Int]): List[Int] = sys.error("todo")
+  def add1(nums: List[Int]): List[Int] =
+    foldRight(nums, Nil:List[Int])((num, acc) => Cons(num + 1, acc))
 
   def doubleToString(l: List[Double]): List[String] = sys.error("todo")
 
