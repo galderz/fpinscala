@@ -20,7 +20,15 @@ object Tree {
     size(t, 0)
   }
 
-  def maximum(t: Tree[Int]): Int = sys.error("todo")
+  def maximum(t: Tree[Int]): Int = {
+    def maximum(t: Tree[Int], curr: Int): Int = {
+      t match {
+        case Leaf(a) => a.max(curr)
+        case Branch(l, r) => maximum(r, maximum(l, curr))
+      }
+    }
+    maximum(t, Integer.MIN_VALUE)
+  }
 
   def depth(t: Tree[_]): Int = sys.error("todo")
 
