@@ -41,7 +41,12 @@ object Tree {
     depth(t, 0)
   }
 
-  def map[A,B](t: Tree[A])(f: A => B): Tree[B] = sys.error("todo")
+  def map[A,B](t: Tree[A])(f: A => B): Tree[B] = {
+    t match {
+      case Leaf(a) => Leaf(f(a))
+      case Branch(l, r) => Branch(map(l)(f), map(r)(f))
+    }
+  }
 
   def fold[A,B](t: Tree[A])(f: A => B)(g: (B,B) => B): B = sys.error("todo")
 
