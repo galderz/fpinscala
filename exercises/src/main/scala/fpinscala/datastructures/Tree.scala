@@ -30,7 +30,16 @@ object Tree {
     maximum(t, Integer.MIN_VALUE)
   }
 
-  def depth(t: Tree[_]): Int = sys.error("todo")
+  def depth(t: Tree[_]): Int = {
+    def depth(t: Tree[_], acc: Int): Int = {
+      t match {
+        case Leaf(a) => acc
+        case Branch(l, r) =>
+          depth(l, acc + 1) max depth(r, acc + 1)
+      }
+    }
+    depth(t, 0)
+  }
 
   def map[A,B](t: Tree[A])(f: A => B): Tree[B] = sys.error("todo")
 
