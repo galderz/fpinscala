@@ -162,7 +162,7 @@ object List { // `List` companion object. Contains functions for creating and wo
   }
 
   def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
-    def loop(l: List[A], sub: List[A], acc: Boolean): Boolean = {
+    @tailrec def loop(l: List[A], sub: List[A], acc: Boolean): Boolean = {
       (l, sub) match {
         case (Nil, _) => acc
         case (_, Nil) => acc
