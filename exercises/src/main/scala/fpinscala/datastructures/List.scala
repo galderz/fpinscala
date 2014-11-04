@@ -161,5 +161,19 @@ object List { // `List` companion object. Contains functions for creating and wo
     }
   }
 
-  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = sys.error("todo")
+  def hasSubsequence[A](l: List[A], sub: List[A]): Boolean = {
+    def loop(l: List[A], sub: List[A], acc: Boolean): Boolean = {
+      (l, sub) match {
+        case (Nil, _) => acc
+        case (_, Nil) => acc
+        case (Cons(h1, t1), Cons(h2, t2)) =>
+          if (h1 == h2) loop(t1, t2, acc = true)
+          else loop(t1, sub, acc = false)
+      }
+    }
+
+    if (l == Nil && sub == Nil) false
+    else if (sub == Nil) true
+    else loop(l, sub, acc = false)
+  }
 }
