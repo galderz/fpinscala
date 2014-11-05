@@ -1,6 +1,7 @@
 package fpinscala.errorhandling
 
 
+import scala.annotation.tailrec
 import scala.{Option => _, Some => _, Either => _, _} // hide std library `Option`, `Some` and `Either`, since we are writing our own in this chapter
 
 sealed trait Option[+A] {
@@ -71,7 +72,22 @@ object Option {
   def map2[A,B,C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
     a.flatMap(x => b.map(y => f(x, y)))
 
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = sys.error("todo")
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = // Could have used map2
+    a.foldRight[Option[List[A]]](Some(List[A]()))((x, acc) => acc.flatMap(l => x.map(_ :: l)))
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+    // Can also be implemented with foldRight
+    @tailrec def loop(a: List[A], acc: Option[List[B]]): Option[List[B]] = {
+      a match {
+        case Nil => acc
+        case x :: xs =>
+          f(x) match {
+            case None => None
+            case Some(y) => loop(xs, acc.map(_ :+ y))
+          }
+      }
+    }
+
+    loop(a, Some(List()))
+  }
 }
