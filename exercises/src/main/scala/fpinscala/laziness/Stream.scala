@@ -78,7 +78,13 @@ trait Stream[+A] {
 
   def forAll(p: A => Boolean): Boolean = foldRight(true)((x, acc) => p(x) && acc)
 
-  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = sys.error("todo")
+  // Important clarification on foldRight vs foldLeft: http://www.manning-sandbox.com/message.jspa?messageID=135047
+  // foldRight allows for early termination since it can opt not to inspect the right argument
+  // foldLeft = (z /: List(a, b, c)) (op) equals op(op(op(z, a), b), c)
+  // foldRight = (List(a, b, c) :\ z) (op) equals op(a, op(b, op(c, z)))
+  //                                              | if op doesn't evaluate the second part, the recursion never occurs, that's how it ends early
+  def takeWhileViaFoldRight(p: A => Boolean): Stream[A] =
+    foldRight(empty[A])((x, acc) => if (p(x)) cons(x, acc) else empty)
 
   def headOption: Option[A] = sys.error("todo")
 
