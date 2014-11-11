@@ -76,7 +76,7 @@ trait Stream[+A] {
 
   def takeWhileViaUnfold(p: A => Boolean): Stream[A] = sys.error("todo")
 
-  def forAll(p: A => Boolean): Boolean = sys.error("todo")
+  def forAll(p: A => Boolean): Boolean = foldRight(true)((x, acc) => p(x) && acc)
 
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] = sys.error("todo")
 
