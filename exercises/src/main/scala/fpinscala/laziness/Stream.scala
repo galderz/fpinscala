@@ -1,6 +1,9 @@
 package fpinscala.laziness
 
 import Stream._
+
+import scala.annotation.tailrec
+
 trait Stream[+A] {
 
   def foldRight[B](z: => B)(f: (A, => B) => B): B = // The arrow `=>` in front of the argument type `B` means that the function `f` takes its second argument by name and may choose not to evaluate it.
@@ -20,11 +23,37 @@ trait Stream[+A] {
 
   def toList: List[A] = foldRight(List.empty[A])((x, acc) => x :: acc)
 
-  def take(n: Int): Stream[A] = sys.error("todo")
+  def take(n: Int): Stream[A] = {
+    def take(n: Int, s: Stream[A], acc: Stream[A]): Stream[A] = {
+      if (n <= 0) acc
+      else {
+        s match {
+          case Empty => empty
+          case Cons(h, t) =>
+            cons(h(), take(n - 1, t(), acc)) // appends by adding the head first, then recurse with the rest, but not tail recursive
+            // take(n - 1, t(), cons(h(), acc)) <- tail recursive but it prepends :(
+        }
+      }
+    }
+
+    take(n, this, empty)
+  }
 
   def takeViaUnfold(n: Int): Stream[A] = sys.error("todo")
 
-  def drop(n: Int): Stream[A] = sys.error("todo")
+  def drop(n: Int): Stream[A] = {
+    @tailrec def drop(i: Int, s: Stream[A]): Stream[A] = {
+      if (n == i) s
+      else {
+        s match {
+          case Empty => empty
+          case Cons(h, t) => drop(i + 1, t())
+        }
+      }
+    }
+
+    drop(0, this)
+  }
 
   def takeWhile(p: A => Boolean): Stream[A] = sys.error("todo")
 
