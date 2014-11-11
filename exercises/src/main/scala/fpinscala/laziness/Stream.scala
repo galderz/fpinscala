@@ -18,7 +18,7 @@ trait Stream[+A] {
     case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
   }
 
-  def toList: List[A] = sys.error("todo")
+  def toList: List[A] = foldRight(List.empty[A])((x, acc) => x :: acc)
 
   def take(n: Int): Stream[A] = sys.error("todo")
 
