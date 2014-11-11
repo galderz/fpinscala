@@ -55,7 +55,24 @@ trait Stream[+A] {
     drop(0, this)
   }
 
-  def takeWhile(p: A => Boolean): Stream[A] = sys.error("todo")
+  def takeWhile(p: A => Boolean): Stream[A] = {
+    def takeWhile(s: Stream[A], acc: Stream[A]): Stream[A] = {
+      s match {
+        case Empty => empty
+        case Cons(h, t) =>
+          lazy val head = h()
+          if (p(head)) cons(head, takeWhile(t(), acc)) else acc
+      }
+    }
+
+    takeWhile(this, empty)
+
+    // Alternative implementation, neater:
+    //    this match {
+    //      case Cons(h, t) if p(h()) => cons(h(), t().takeWhile(p))
+    //      case _ => empty
+    //    }
+  }
 
   def takeWhileViaUnfold(p: A => Boolean): Stream[A] = sys.error("todo")
 
