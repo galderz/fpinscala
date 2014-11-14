@@ -166,7 +166,8 @@ object Stream {
 
   lazy val fibs: Stream[Int] = lazyFibs2(0, 1)
 
-  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z).map((x) => Stream.cons(x._1, unfold(x._2)(f))).getOrElse(empty)
 
   lazy val fibsViaUnfold: Stream[Int] = sys.error("todo")
 
