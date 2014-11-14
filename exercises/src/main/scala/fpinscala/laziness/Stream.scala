@@ -86,7 +86,17 @@ trait Stream[+A] {
   def takeWhileViaFoldRight(p: A => Boolean): Stream[A] =
     foldRight(empty[A])((x, acc) => if (p(x)) cons(x, acc) else empty)
 
-  def headOption: Option[A] = sys.error("todo")
+  def headOption: Option[A] =
+    foldRight(Option.empty[A])((h, _) => Some(h))
+    // Initial solution, more complex but works :)
+    //    foldRight(Option.empty[A]) {
+    //      (x, acc) =>
+    //        println(x)
+    //        acc match {
+    //          case None => Some(x)
+    //          case Some(a) => None // Doesn't matter what you return here! Anything except acc, which will result in recursion continuing
+    //        }
+    //    }
 
   def map[B](f: A => B): Stream[B] = sys.error("todo")
 
