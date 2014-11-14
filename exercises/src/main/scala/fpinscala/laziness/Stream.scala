@@ -169,11 +169,15 @@ object Stream {
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
     f(z).map((x) => Stream.cons(x._1, unfold(x._2)(f))).getOrElse(empty)
 
-  lazy val fibsViaUnfold: Stream[Int] = sys.error("todo")
+  lazy val fibsViaUnfold: Stream[Int] =
+    unfold((0, 1)) { case (f0, f1) => Some(f0, (f1, f0 + f1)) }
 
-  def fromViaUnfold(n: Int): Stream[Int] = sys.error("todo")
+  def fromViaUnfold(n: Int): Stream[Int] =
+    unfold(n)(n => Some(n, n + 1))
 
-  def constantViaUnfold[A](a: A): Stream[A] = sys.error("todo")
+  def constantViaUnfold[A](a: A): Stream[A] =
+    unfold(a)(a => Some(a, a))
 
-  lazy val onesViaUnfold: Stream[Int] = sys.error("todo")
+  lazy val onesViaUnfold: Stream[Int] =
+    unfold(1)(x => Some(1, 1))
 }
