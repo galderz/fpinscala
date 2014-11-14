@@ -98,15 +98,19 @@ trait Stream[+A] {
     //        }
     //    }
 
-  def map[B](f: A => B): Stream[B] = sys.error("todo")
+  def map[B](f: A => B): Stream[B] =
+    foldRight(empty[B])((x, acc) => cons(f(x), acc))
 
   def mapViaUnfold[B](f: A => B): Stream[B] = sys.error("todo")
 
-  def filter(p: A => Boolean): Stream[A] = sys.error("todo")
+  def filter(p: A => Boolean): Stream[A] =
+    foldRight(empty[A])((x, acc) => if (p(x)) cons(x, acc) else acc)
 
-  def append[B>:A](other: Stream[B]): Stream[B] = sys.error("todo")
+  def append[B>:A](other: Stream[B]): Stream[B] =
+    foldRight(other)((x, acc) => cons(x, acc))
 
-  def flatMap[B](f: A => Stream[B]): Stream[B] = sys.error("todo")
+  def flatMap[B](f: A => Stream[B]): Stream[B] =
+    foldRight(empty[B])((x, acc) => f(x).append(acc))
 
   def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = sys.error("todo")
 
