@@ -144,7 +144,27 @@ object Stream {
 
   def from(n: Int): Stream[Int] = Stream.cons(n, from(n + 1))
 
-  lazy val fibs: Stream[Int] = sys.error("todo")
+  def fib1(n: Int): Int = {
+    @annotation.tailrec
+    def loop(n: Int, prev: Int, cur: Int): Int =
+      if (n == 0) prev
+      else loop(n - 1, cur, prev + cur)
+    loop(n, 0, 1)
+  }
+
+  def lazyFibs1(n: Int): Stream[Int] = Stream.cons(fib1(n), lazyFibs1(n + 1))
+
+                                                              // (0,   lazyFibs2(1, 0 + 1))
+                                                              // (1,   lazyFibs2(1, 1 + 1))
+                                                              // (1,   lazyFibs2(2, 1 + 2))
+                                                              // (2,   lazyFibs2(3, 2 + 3))
+                                                              // (3,   lazyFibs2(5, 3 + 5))
+                                                              // (5,   lazyFibs2(8, 5 + 8))
+                                                              // (8,   lazyFibs2(13, 8 + 13))
+                                                              // (13,  lazyFibs2(21, 13 + 31))
+  def lazyFibs2(fib0: Int, fib1: Int): Stream[Int] = Stream.cons(fib0, lazyFibs2(fib1, fib0 + fib1))
+
+  lazy val fibs: Stream[Int] = lazyFibs2(0, 1)
 
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = sys.error("todo")
 
