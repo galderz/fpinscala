@@ -140,7 +140,7 @@ object Stream {
 
   val ones: Stream[Int] = Stream.cons(1, ones)
 
-  def constant[A](a: A): Stream[A] = sys.error("todo")
+  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
 
   def from(n: Int): Stream[Int] = sys.error("todo")
 
