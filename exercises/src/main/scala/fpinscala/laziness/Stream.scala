@@ -39,7 +39,13 @@ trait Stream[+A] {
     take(n, this, empty)
   }
 
-  def takeViaUnfold(n: Int): Stream[A] = sys.error("todo")
+  def takeViaUnfold(n: Int): Stream[A] =
+    unfold((this, 0)) { case (s, i) =>
+      s match {
+        case Cons(h, t) if i != n =>  Some(h(), (t(), i + 1))
+        case _ => None
+      }
+    }
 
   def drop(n: Int): Stream[A] = {
     @tailrec def drop(i: Int, s: Stream[A]): Stream[A] = {
@@ -74,7 +80,11 @@ trait Stream[+A] {
     //    }
   }
 
-  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = sys.error("todo")
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] =
+    unfold(this) {
+      case Cons(h, t) if p(h()) => Some(h(), t())
+      case _ => None
+    }
 
   def forAll(p: A => Boolean): Boolean = foldRight(true)((x, acc) => p(x) && acc)
 
@@ -101,7 +111,11 @@ trait Stream[+A] {
   def map[B](f: A => B): Stream[B] =
     foldRight(empty[B])((x, acc) => cons(f(x), acc))
 
-  def mapViaUnfold[B](f: A => B): Stream[B] = sys.error("todo")
+  def mapViaUnfold[B](f: A => B): Stream[B] =
+    unfold(this) {
+      case Empty => None
+      case Cons(h, t) => Some((f(h.apply()), t()))
+    }
 
   def filter(p: A => Boolean): Stream[A] =
     foldRight(empty[A])((x, acc) => if (p(x)) cons(x, acc) else acc)
@@ -112,9 +126,25 @@ trait Stream[+A] {
   def flatMap[B](f: A => Stream[B]): Stream[B] =
     foldRight(empty[B])((x, acc) => f(x).append(acc))
 
-  def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = sys.error("todo")
+  def zipWith[B,C](s2: Stream[B])(f: (A,B) => C): Stream[C] = {
+    unfold((this, s2)) { case (str1, str2) =>
+      (str1, str2) match {
+        case (Cons(h1, t1), Cons(h2, t2)) => Some((f(h1(), h2()), (t1(), t2())))
+        case _ => None
+      }
+    }
+  }
 
-  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = sys.error("todo")
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+    unfold((this, s2)) { case (str1, str2) =>
+      (str1, str2) match {
+        case (Cons(h1, t1), Cons(h2, t2)) => Some(((Some(h1()), Some(h2())), (t1(), t2())))
+        case (Cons(h1, t1), Empty) => Some(((Some(h1()), Option.empty[B]), (t1(), empty[B])))
+        case (Empty, Cons(h2, t2)) => Some(((Option.empty[A], Some(h2())), (empty[A], t2())))
+        case _ => None
+      }
+    }
+  } // Ignore IDE error
 
   def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
 
