@@ -36,7 +36,13 @@ object RNG {
     else (Math.abs(n), rng2)
   }
 
-  def double(rng: RNG): (Double, RNG) = ???
+  def double(rng: RNG): (Double, RNG) = {
+    val (nn, rng2) = nonNegativeInt(rng)
+    // Between 0 and 1, but not including 1
+    // Calling toDouble is important
+    // You add one to max value so that even max value would not return 1.0
+    (nn / (Int.MaxValue.toDouble + 1), rng2)
+  }
 
   def intDouble(rng: RNG): ((Int,Double), RNG) = ???
 
