@@ -160,7 +160,28 @@ trait Stream[+A] {
     }.append(cons(empty[A], empty[Stream[A]]))
   }
 
-  def scanRight[B](s: B)(f: (A, B) => B): Stream[B] = sys.error("todo")
+  // Can't use unfold because it generates elements from left to right
+  // and scanRight requires to do the work from right to left
+  def scanRight[B](s: B)(f: (A, B) => B): Stream[B] = {
+    // Using foldRight with accumulation
+    foldRight((s, Stream(s))) { (x, acc) =>
+      val b = f(x, acc._1)
+      (b, cons(b, acc._2))
+    }._2
+
+    // Using foldRight without accumulation
+    // foldRight(Stream(s)) { (x, acc) =>
+    //  acc match {
+    //    case Cons(h, t) => cons(f(x, h()), acc)
+    //    case Empty => acc
+    //  }
+    // }
+
+    // Working implementation, not very efficient
+    // tails.flatMap { str =>
+    //  Stream(str.foldRight(s)((x, acc) => f(x, acc)))
+    // }
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
