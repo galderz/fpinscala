@@ -153,7 +153,12 @@ trait Stream[+A] {
     }
   }
 
-  def tails: Stream[Stream[A]] = sys.error("todo using unfold")
+  def tails: Stream[Stream[A]] = {
+    unfold(this) {
+      case s@Cons(h1, t1) => Some((s, t1()))
+      case _ => None
+    }.append(cons(empty[A], empty[Stream[A]]))
+  }
 
   def scanRight[B](s: B)(f: (A, B) => B): Stream[B] = sys.error("todo")
 }
