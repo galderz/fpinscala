@@ -146,7 +146,12 @@ trait Stream[+A] {
     }
   } // Ignore IDE error
 
-  def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
+  def startsWith[B](s: Stream[B]): Boolean = {
+    zipAll(s).takeWhile(_._2 != None).forAll {
+      case (Some(a), Some(b)) => a == b
+      case _ => false
+    }
+  }
 
   def tails: Stream[Stream[A]] = sys.error("todo using unfold")
 
