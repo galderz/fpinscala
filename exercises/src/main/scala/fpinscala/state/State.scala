@@ -77,7 +77,8 @@ object RNG {
     loop(0, (List(), rng))
   }
 
-  def doubleViaMap: Rand[Double] = ???
+  def doubleViaMap: Rand[Double] =
+    map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
 
   def map2[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = ???
 
