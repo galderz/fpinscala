@@ -127,12 +127,21 @@ object RNG {
 }
 
 case class State[S,+A](run: S => (A, S)) {
-  def map[B](f: A => B): State[S, B] =
-    sys.error("todo")
-  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
-    sys.error("todo")
-  def flatMap[B](f: A => State[S, B]): State[S, B] =
-    sys.error("todo")
+  def map[B](f: A => B): State[S, B] = State((s: S) => {
+    val (a, s2) = run(s)
+    (f(a), s2)
+  })
+
+  def map2[B,C](sb: State[S, B])(f: (A, B) => C): State[S, C] = State((s: S) => {
+    val (a, s2) = run(s)
+    val (b, s3) = sb.run(s2)
+    (f(a, b), s3)
+  })
+
+  def flatMap[B](f: A => State[S, B]): State[S, B] = State((s: S) => {
+    val (a, s2) = run(s)
+    f(a).run(s2)
+  })
 }
 
 sealed trait Input
@@ -144,9 +153,12 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 object State {
   type Rand[A] = State[RNG, A]
 
-  def unit[S, A](a: A): State[S, A] = ???
+  def unit[S, A](a: A): State[S, A] =
+    State((s: S) => (a, s))
 
-  def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] = ???
+  def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] = {
+    sas.foldRight(unit[S, List[A]](List.empty[A]))((x, acc) => x.map2(acc)((a, l) => a :: l))
+  }
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
 }
