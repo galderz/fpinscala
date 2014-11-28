@@ -160,5 +160,55 @@ object State {
     sas.foldRight(unit[S, List[A]](List.empty[A]))((x, acc) => x.map2(acc)((a, l) => a :: l))
   }
 
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+  def modify[S](f: S => S): State[S, Unit] = for {
+    s <- get
+    _ <- set(f(s))
+  } yield ()
+
+  def get[S]: State[S, S] = State(s => (s, s))
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+    // With for-comprehensions
+    for {
+      _ <- sequence(inputs.map(i => modify((s: Machine) => {
+         if (s.candies > 0) {
+           i match {
+             case Coin if s.locked => s.copy(locked = false, coins = s.coins + 1)
+             case Turn if !s.locked => s.copy(candies = s.candies - 1, locked = true)
+             case _ => s
+           }
+         } else s
+      })))
+      m <- get
+    } yield {
+      (m.coins, m.candies)
+    }
+
+    // With high order functions
+    // sequence(inputs.map(i => modify((s: Machine) => {
+    //   if (s.candies > 0) {
+    //     i match {
+    //       case Coin if s.locked => s.copy(locked = false, coins = s.coins + 1)
+    //       case Turn if !s.locked => s.copy(candies = s.candies - 1, locked = true)
+    //       case _ => s
+    //     }
+    //   } else s
+    // }
+    // ))).flatMap(_ => get).flatMap(m => unit((m.coins, m.candies)))
+
+    // Without high order functions
+    // State((s: Machine) => {
+    //   val finalmachine = inputs.foldLeft(s) { (acc, x) =>
+    //     if (acc.candies > 0) {
+    //       x match {
+    //         case Coin if acc.locked => acc.copy(locked = false, coins = acc.coins + 1)
+    //         case Turn if !acc.locked => acc.copy(candies = acc.candies - 1, locked = true)
+    //         case _ => acc
+    //       }
+    //     } else acc
+    //  }
+    //   ((finalmachine.coins, finalmachine.candies), finalmachine)
+    // })
+  }
 }
