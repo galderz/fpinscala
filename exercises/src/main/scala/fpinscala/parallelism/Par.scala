@@ -38,7 +38,8 @@ object Par {
 
   def sortPar(parList: Par[List[Int]]) = map(parList)(_.sorted)
 
-  def sequence[A](as: List[Par[A]]): Par[List[A]] = ???
+  def sequence[A](as: List[Par[A]]): Par[List[A]] =
+    as.foldRight(unit(List.empty[A]))((x, acc) => map2(x, acc)((parX, parAcc) => parX :: parAcc))
 
   def parFilter[A](l: List[A])(f: A => Boolean): Par[List[A]] = ???
 
