@@ -77,11 +77,17 @@ object Par {
       choices(k)(es)
     }
 
-  def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] = ???
+  def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] =
+    es => {
+      val a = run(es)(pa).get()
+      choices(a)(es)
+    }
 
-  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] = ???
+  def choiceViaChooser[A](cond: Par[Boolean])(t: Par[A], f: Par[A]): Par[A] =
+    chooser(cond)((b: Boolean) => if (b) t else f)
 
-  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = ???
+  def choiceNViaChooser[A](n: Par[Int])(choices: List[Par[A]]): Par[A] =
+    chooser(n)((i: Int) => choices(i))
 
   def flatMap[A,B](pa: Par[A])(f: A => Par[B]): Par[B] = ???
 
