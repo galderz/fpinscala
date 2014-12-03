@@ -57,9 +57,19 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
   behavior of "8.2 List.max"
   it should "obey some laws" in {
     val ints = SCGen.choose(0, 100)
+    val nonZeroInts = SCGen.choose(1, 100)
     val intList = SCGen.listOf1(ints)
     val prop: SCProp =
-      SCProp.forAll(intList) { l: List[Int] => ??? }
+      SCProp.forAll(intList) { l: List[Int] => l.max == l.reverse.max } &&
+      SCProp.forAll(SCGen.listOfN(0, ints)) { l: List[Int] =>
+        SCProp.throws(classOf[UnsupportedOperationException])(l.max)} &&
+      SCProp.forAll(nonZeroInts, ints) { (n: Int, x: Int) => List.fill(n)(x).max == x } &&
+      SCProp.forAll(ints) { (n: Int) => (0 to n).toList.max === n }
+      // A bit pain, need to make sure splitted lists are not empty
+      // SCProp.forAll(intList, ints) { (l: List[Int], n: Int) =>
+      //  val at = l.splitAt(n)
+      //  l.max == Math.max(at._1.max, at._2.max)
+      // }
     checkProp(prop)
   }
 
