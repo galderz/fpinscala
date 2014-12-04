@@ -15,7 +15,9 @@ shell, which you can fill in and modify while working through the chapter.
 
 trait Prop0 { self =>
   def check: Boolean
-  def &&(p: Prop0): Prop0 = ???
+  def &&(p: Prop0): Prop0 = new Prop0 {
+    override def check: Boolean = self.check && p.check
+  }
 }
 
 trait Prop1 { self =>
