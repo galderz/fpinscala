@@ -83,12 +83,14 @@ object ListProps {
 }
 
 object Gen {
-  def unit[A](a: => A): Gen[A] = ???
+  def unit[A](a: => A): Gen[A] =
+    Gen(State(RNG.unit(a)))
 
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(State(RNG.double).map(i => start + (i * (stopExclusive - start)).toInt))
 
-  def boolean: Gen[Boolean] = ???
+  def boolean: Gen[Boolean] =
+    Gen(State(RNG.nonNegativeLessThan(2)).map(i => if (i == 1) true else false))
 
   def double: Gen[Double] =
     Gen(State(RNG.double))
@@ -100,7 +102,8 @@ object Gen {
         a <- gen
       } yield if (b) Some(a) else None
 
-  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = ???
+  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
+    Gen(State.sequence(List.fill(n)(g.sample)))
 
   def stringN(n: Int): Gen[String] = ???
 
