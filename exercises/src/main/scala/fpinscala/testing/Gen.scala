@@ -85,7 +85,8 @@ object ListProps {
 object Gen {
   def unit[A](a: => A): Gen[A] = ???
 
-  def choose(start: Int, stopExclusive: Int): Gen[Int] = ???
+  def choose(start: Int, stopExclusive: Int): Gen[Int] =
+    Gen(State(RNG.double).map(i => start + (i * (stopExclusive - start)).toInt))
 
   def boolean: Gen[Boolean] = ???
 
