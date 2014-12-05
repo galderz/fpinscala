@@ -118,7 +118,16 @@ object Gen {
     //   if (b) a1 else a2
     // }
 
-  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = ???
+  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = {
+    val prob = g1._2.abs / (g1._2.abs + g2._2.abs)
+    for {
+      d <- double
+      a1 <- g1._1
+      a2 <- g2._1
+    } yield {
+      if (d < prob) a1 else a2
+    }
+  }
 
   def listOf[A](g: Gen[A]): SGen[List[A]] = ???
 
