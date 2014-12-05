@@ -107,7 +107,16 @@ object Gen {
 
   def stringN(n: Int): Gen[String] = ???
 
-  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = ???
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
+    boolean.flatMap(b => if (b) g1 else g2)
+    // One possible way, rather imperative
+    // for {
+    //   b <- Gen.boolean
+    //   a1 <- g1
+    //   a2 <- g2
+    // } yield {
+    //   if (b) a1 else a2
+    // }
 
   def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = ???
 
