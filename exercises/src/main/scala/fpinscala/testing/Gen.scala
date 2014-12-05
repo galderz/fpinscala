@@ -32,11 +32,38 @@ trait Prop1 { self =>
 }
 
 case class Prop(run: (TestCases,RNG) => Result) {
-  def &&(p: Prop): Prop = ???
+  def &&(p: Prop): Prop = Prop { (tc,rng) =>
+    run(tc, rng) match {
+      case Passed => p.run(tc, rng)
+      case f@Falsified(e, c) => f
+    }
+  }
+  // Eager implementation wasteful because it invokes second property when it might not need to
+  //  Prop { (tc, rng) =>
+  //    val r1 = run.apply(tc, rng)
+  //    val r2 = p.run.apply(tc, rng)
+  //    if (!r1.isFalsified && !r2.isFalsified) Passed
+  //    else if (r1.isFalsified) r1
+  //    else r2
+  //  }
 
-  def ||(p: Prop): Prop = ???
+  def ||(p: Prop): Prop = Prop { (tc,rng) =>
+    run(tc, rng) match {
+      case ok@Passed => ok
+      case Falsified(e, c) => p.tag(e).run(tc, rng)
+    }
+  }
+  // Eager implementation wasteful because it invokes second property when it might not need to
+  //  Prop { (tc, rng) =>
+  //    val r1 = run.apply(tc, rng)
+  //    val r2 = p.run.apply(tc, rng)
+  //    (r1, r2) match {
+  //      case (Falsified(f1, s1), Falsified(f2, s2)) => p.tag(f2).run.apply(tc, rng)
+  //      case _ => Passed
+  //    }
+  //  }
 
-  def tag(msg: String) = Prop { (tc,rng) =>
+  def tag(msg: String): Prop = Prop { (tc,rng) =>
     run(tc, rng) match {
       case Falsified(e, c) => Falsified(msg + "\n" + e, c)
       case x => x
