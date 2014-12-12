@@ -160,7 +160,7 @@ object Gen {
     // Original solution
     // SGen((i: Int) => g.map(a => List.fill(i)(a)))
 
-  def listOf1[A](g: Gen[A]): SGen[List[A]] = ???
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen((i: Int) => listOfN(i max 1, g))
 
   lazy val parInt: Gen[Par[Int]] = ???
 }
