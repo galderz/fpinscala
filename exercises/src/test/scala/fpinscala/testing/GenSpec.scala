@@ -259,6 +259,7 @@ class GenSpec extends FlatSpec with PropertyChecks with BeforeAndAfterEach {
     val threadFactory: ThreadFactory =
       new ThreadFactory {
         override def newThread(r: Runnable) = {
+          // println(asyncThreadCount)
           asyncThreadCount.incrementAndGet
           Executors.defaultThreadFactory.newThread(r)
         }

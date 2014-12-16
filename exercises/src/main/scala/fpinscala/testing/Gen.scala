@@ -183,7 +183,16 @@ object Gen {
 
   def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen((i: Int) => listOfN(i max 1, g))
 
-  lazy val parInt: Gen[Par[Int]] = ???
+  lazy val parInt: Gen[Par[Int]] =
+    // Randomly passes test :|
+    choose(-100,100).listOfN(choose(0,20)).map(l =>
+      l.foldLeft(Par.unit(0))((p,i) =>
+        Par.fork { Par.map2(p, Par.unit(i))(_ + _) }))
+    // Does not pass test:
+    // choose(-100, 100).map(i => Par.lazyUnit(i))
+    //
+    // Does not pass test:
+    // Gen(State(RNG.int).map(i => Par.lazyUnit(i)))
 }
 
 case class Gen[+A](sample: State[RNG,A]) {
