@@ -125,7 +125,9 @@ object ListProps {
     val p1 = Prop.forAll(intListGen) { l: List[Int] =>
       l.takeWhile(f).forall(f) == true
     }
-    val p2: Prop = ???
+    val p2: Prop = Prop.forAll(intListGen) { l: List[Int] =>
+      l == l.takeWhile(f) ++ l.dropWhile(f)
+    }
     p1 && p2
   }
 }
