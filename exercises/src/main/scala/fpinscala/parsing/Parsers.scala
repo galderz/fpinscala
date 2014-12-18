@@ -20,10 +20,11 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     ???
 
   def many[A](p: Parser[A]): Parser[List[A]] = // 152, 155
-    ???
+    map2(p, many(p))(_ :: _) or succeed(List())
 
   def map[A,B](a: Parser[A])(f: A => B): Parser[B] = // 152
-    ???
+    flatMap(a)(a => succeed(f(a)))
+    // flatMap(a)(f andThen succeed)
 
   def char(c: Char): Parser[Char] = // 153
     string(c.toString) map ((_: String).charAt(0))
@@ -33,13 +34,15 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   def slice[A](p: Parser[A]): Parser[String] // 154
 
   def many1[A](p: Parser[A]): Parser[List[A]] = // 154
-    ???
+    map2(p, many(p))(_ :: _)
 
   def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = // 154, 156, 157
-    ???
+    flatMap(p)(a => map(p2)(b => (a, b)))
+    // "Missing parameter type" compilation error
+    // p.flatMap(a => p2.map(b => (a, b)))
 
   def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = // 157
-    ???
+    product(p, p2).map(f.tupled)
 
   def flatMap[A,B](p: Parser[A])(f: A => Parser[B]): Parser[B] // 157
 
@@ -63,11 +66,17 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   }
 
   object Laws {
+    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
+      forAll(in)(s => run(p1)(s)== run(p2)(s))
+
+    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
+      equal(p, p.map(a => a))(in)
   }
 
   object Exercises {
     def map2ViaProduct[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = // 154
-      ???
+      // Solution converting a 2 parameter function into a tuple (other tried solutions fail to compile)
+      p.product(p2).map(f.tupled)
 
     def csListOfN[A](p: Parser[A]): Parser[List[A]] = // 157
       ???
