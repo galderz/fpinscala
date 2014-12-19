@@ -17,7 +17,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     ParserOps(f(a))
 
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = // 150, 155
-    ???
+    if (n <= 0) succeed(List())
+    else map2(p, listOfN(n - 1, p))((a, l) => a :: l)
 
   def many[A](p: Parser[A]): Parser[List[A]] = // 152, 155
     map2(p, many(p))(_ :: _) or succeed(List())
@@ -70,7 +71,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
       forAll(in)(s => run(p1)(s)== run(p2)(s))
 
     def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
-      equal(p, p.map(a => a))(in)
+      equal(p, map(p)(a => a))(in)
   }
 
   object Exercises {
