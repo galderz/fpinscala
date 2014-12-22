@@ -80,7 +80,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
       p.product(p2).map(f.tupled)
 
     def csListOfN[A](p: Parser[A]): Parser[List[A]] = // 157
-      ???
+      regex("[0-9_]*".r).flatMap(d => listOfN(d.toInt, p))
   }
 }
 
