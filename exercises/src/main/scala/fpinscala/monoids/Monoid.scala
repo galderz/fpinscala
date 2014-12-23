@@ -1,7 +1,11 @@
 package fpinscala.monoids
 
 import fpinscala.parallelism.Nonblocking._
-import fpinscala.parallelism.Nonblocking.Par.toParOps // infix syntax for `Par.map`, `Par.flatMap`, etc
+import fpinscala.parallelism.Nonblocking.Par.toParOps
+
+import scala.annotation.tailrec
+
+// infix syntax for `Par.map`, `Par.flatMap`, etc
 
 trait Monoid[A] {
   def op(a1: A, a2: A): A
@@ -81,8 +85,19 @@ object Monoid {
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     foldMap(as, dual(endoMonoid[B]))(a => b => f(b, a))(z)
 
-  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
-    sys.error("todo")
+  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+    if (as.size <= 1) {
+      as.foldLeft(m.zero)((_, a) => f(a))
+      // as.headOption match {
+      //   case None => m.zero
+      //   case Some(a) => f(a)
+      // }
+    }
+    else {
+      val (l, r) = as.splitAt(as.length / 2)
+      m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+    }
+  }
 
   def ordered(ints: IndexedSeq[Int]): Boolean =
     sys.error("todo")
