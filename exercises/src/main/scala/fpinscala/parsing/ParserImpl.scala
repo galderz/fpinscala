@@ -37,14 +37,30 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
   override def run[A](p: Parser[A])(input: String): Either[ParseError,A] = // 149, 163, 170
     ???
 
-  override implicit def string(s: String): Parser[String] = // 149, 167
-    ???
+  override implicit def string(s: String): Parser[String] = { // 149, 167
+    val msg = "'" + s + "'"
+    (l: Location) => {
+      val i = firstNonmatchingIndex(l.input, s, l.offset)
+      if (i == -1) // they matched
+        Success(s, s.length)
+      else
+        Failure(l.advanceBy(i).toError(msg), i != 0)
+    }
+  }
 
-  override implicit def regex(r: Regex): Parser[String] = // 157, 167
-    ???
+  override implicit def regex(r: Regex): Parser[String] = { // 157, 167
+    val msg = "regex " + r
+    l => r.findPrefixOf(l.input) match {
+      case None => Failure(l.toError(msg), false)
+      case Some(m) => Success(m, m.length)
+    }
+  }
 
   override def slice[A](p: Parser[A]): Parser[String] = // 154, 167
-    ???
+    l => p(l) match {
+      case Success(s, n) => Success(l.input.substring(l.offset, l.offset + n), n)
+      case f@Failure(_, _) => f
+    }
 
   override def label[A](msg: String)(p: Parser[A]): Parser[A] = // 161
     s => p(s).mapError(_.label(msg)) // 168
@@ -70,6 +86,19 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
     }
 
   override def succeed[A](a: A): Parser[A] = // 153, 167
-    ???
+    l => Success(a, 0)
+
+  /** Returns -1 if s.startsWith(s2), otherwise returns the
+    * first index where the two strings differed. If s2 is
+    * longer than s1, returns s.length. */
+  def firstNonmatchingIndex(s: String, s2: String, offset: Int): Int = {
+    var i = 0
+    while (i < s.length && i < s2.length) {
+      if (s.charAt(i+offset) != s2.charAt(i)) return i
+      i += 1
+    }
+    if (s.length-offset >= s2.length) -1
+    else s.length-offset
+  }
 
 }
