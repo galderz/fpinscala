@@ -68,7 +68,7 @@ object Monoid {
     sys.error("todo")
 
   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
-    sys.error("todo")
+    as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
 
   def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
     sys.error("todo")
