@@ -10,5 +10,23 @@ object JSON {
   case class JArray(get: IndexedSeq[JSON]) extends JSON
   case class JObject(get: Map[String, JSON]) extends JSON
 
-  def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] = ???
+  def jsonParser[Parser[+_]](P: Parsers[Parser]): Parser[JSON] = {
+    import P.{string => _, _}
+    implicit def tok(s: String) = token(P.string(s))
+
+    def array = surround("[","]")(
+      map(value.sep(","))(vs => JArray(vs.toIndexedSeq))).scope("array")
+    def obj = surround("{","}")(
+      map(keyval.sep(","))(kvs => JObject(kvs.toMap))).scope("object")
+    def keyval = escapedQuoted ** (":" *> value)
+    def lit = scope("literal") {
+      "null".as(JNull) |
+        map(double)(JNumber(_)) |
+        map(escapedQuoted)(JString(_)) |
+        "true".as(JBool(true)) |
+        "false".as(JBool(false))
+    }
+    def value: Parser[JSON] = lit | obj | array
+    root(whitespace *> (obj | array))
+  }
 }

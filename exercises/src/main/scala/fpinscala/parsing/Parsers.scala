@@ -1,5 +1,7 @@
 package fpinscala.parsing
 
+import java.util.regex.Pattern
+
 import scala.util.matching.Regex
 
 import fpinscala.testing.Gen
@@ -64,7 +66,73 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     def **[B](p2: => Parser[B]): Parser[(A, B)] = self.product(p, p2) // 154
     def product[B](p2: => Parser[B]): Parser[(A, B)] = self.product(p, p2) // 154
     def flatMap[B](f: A => Parser[B]): Parser[B] = self.flatMap(p)(f) // 157
+    def <*(p2: => Parser[Any]) = self.skipR(p, p2)
+    def *>[B](p2: => Parser[B]) = self.skipL(p, p2)
+    def scope(msg: String): Parser[A] = self.scope(msg)(p)
+    def sep(separator: Parser[Any]) = self.sep(p, separator)
+    def label(msg: String): Parser[A] = self.label(msg)(p)
+    def as[B](b: B): Parser[B] = self.map(self.slice(p))(_ => b)
   }
+
+  // JSON parser methods
+  /** Attempts `p` and strips trailing whitespace, usually used for the tokens of a grammar. */
+  def token[A](p: Parser[A]): Parser[A] =
+    attempt(p) <* whitespace
+
+  /** Parser which consumes zero or more whitespace characters. */
+  def whitespace: Parser[String] = "\\s*".r
+
+  /** Sequences two parsers, ignoring the result of the second.
+    * We wrap the ignored half in slice, since we don't care about its result. */
+  def skipR[A](p: Parser[A], p2: => Parser[Any]): Parser[A] =
+    map2(p, slice(p2))((a,b) => a)
+
+  /** Sequences two parsers, ignoring the result of the first.
+    * We wrap the ignored half in slice, since we don't care about its result. */
+  def skipL[B](p: Parser[Any], p2: => Parser[B]): Parser[B] =
+    map2(slice(p), p2)((_,b) => b)
+
+  /** Wraps `p` in start/stop delimiters. */
+  def surround[A](start: Parser[Any], stop: Parser[Any])(p: => Parser[A]) =
+    start *> p <* stop
+
+  /** Zero or more repetitions of `p`, separated by `p2`, whose results are ignored. */
+  def sep[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] = // use `Parser[Any]` since don't care about result type of separator
+    sep1(p,p2) or succeed(List())
+
+  /** One or more repetitions of `p`, separated by `p2`, whose results are ignored. */
+  def sep1[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] =
+    map2(p, many(p2 *> p))(_ :: _)
+
+  /** Unescaped or escaped string literals, like "An \n important \"Quotation\"" or "bar". */
+  def escapedQuoted: Parser[String] =
+  // rather annoying to write, left as an exercise
+  // we'll just use quoted (unescaped literals) for now
+    token(quoted label "string literal")
+
+  /** Unescaped string literals, like "foo" or "bar". */
+  def quoted: Parser[String] = map(skipL(string("\""), thru("\"")))(s => s.dropRight(1))
+
+  /** Parser which consumes reluctantly until it encounters the given string. */
+  def thru(s: String): Parser[String] = (".*?"+Pattern.quote(s)).r
+
+  /** Floating point literals, converted to a `Double`. */
+  def double: Parser[Double] =
+    map(doubleString)(_.toDouble) label "double literal"
+
+  /** C/Java style floating point literals, e.g .1, -1.0, 1e9, 1E-23, etc.
+    * Result is left as a string to keep full precision
+    */
+  def doubleString: Parser[String] =
+    token("[-+]?([0-9]*\\.)?[0-9]+([eE][-+]?[0-9]+)?".r)
+
+  /** The root of the grammar, expects no further input following `p`. */
+  def root[A](p: Parser[A]): Parser[A] =
+    p <* eof
+
+  /** A parser that succeeds when given empty input. */
+  def eof: Parser[String] =
+    regex("\\z".r).label("unexpected trailing characters")
 
   object Laws {
     def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
