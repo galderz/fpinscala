@@ -35,7 +35,10 @@ object ParserImpl extends Parsers[ParserTypes.Parser] {
   import ParserTypes._
 
   override def run[A](p: Parser[A])(input: String): Either[ParseError,A] = // 149, 163, 170
-    ???
+    p(Location(input)) match {
+      case Success(a, n) => Right(a)
+      case Failure(pe, committed) => Left(pe)
+    }
 
   override implicit def string(s: String): Parser[String] = { // 149, 167
     val msg = "'" + s + "'"
