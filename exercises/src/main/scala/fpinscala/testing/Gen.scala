@@ -97,6 +97,18 @@ object Prop {
     }.find(_.isFalsified).getOrElse(Passed)
   }
 
+  def forAll[A](g1: Gen[A], g2: Gen[A])(f: (A, A) => Boolean): Prop =
+    forAll(g1.map2(g2)((_, _))) { case (a1, a2) => f(a1, a2) }
+
+  def forAll[A](g1: Gen[A], g2: Gen[A], g3: Gen[A])(f: (A, A, A) => Boolean): Prop =
+    forAll(for {
+      a1 <- g1
+      a2 <- g2
+      a3 <- g3
+    } yield {
+      (a1, a2, a3)
+    }) { case (a1, a2, a3) => f(a1, a2, a3) }
+
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] =
     Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
 
@@ -155,7 +167,8 @@ object Gen {
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =
     Gen(State.sequence(List.fill(n)(g.sample)))
 
-  def stringN(n: Int): Gen[String] = ???
+  def stringN(n: Int): Gen[String] =
+    listOfN(n, choose(0, 127)).map(l => l.map(_.toChar).mkString)
 
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
     boolean.flatMap(b => if (b) g1 else g2)
