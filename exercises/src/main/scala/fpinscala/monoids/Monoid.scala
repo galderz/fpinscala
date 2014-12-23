@@ -45,7 +45,10 @@ object Monoid {
     def zero = None
   }
 
-  def endoMonoid[A]: Monoid[A => A] = sys.error("todo")
+  def endoMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
+    def op(a1: A => A, a2: A => A): A => A = a1 andThen a2
+    def zero: (A) => A = (a: A) => a
+  }
 
   import fpinscala.testing._
   import Prop._
